@@ -1,8 +1,11 @@
 package controllers;
 
+import com.google.gson.Gson;
+
 import io.javalin.Javalin;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Queue;
 
 import models.GameBoard;
@@ -35,6 +38,16 @@ class PlayGame {
       ctx.redirect("/tictactoe.html");
     });
     
+    // Start a new game
+    app.post("/startgame", ctx -> {
+      final char type = ctx.formParam("type").charAt(0);
+      
+      final GameBoard board = new GameBoard(new Player(type, 1), null,
+          false, 1, new char[3][3], 0, false);
+      
+      ctx.result(new Gson().toJson(board)).contentType("application/json");
+    });
+
     /**
      * Please add your end points here.
      * 
