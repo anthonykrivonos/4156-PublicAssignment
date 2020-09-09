@@ -1,8 +1,13 @@
 package controllers;
 
 import io.javalin.Javalin;
+
 import java.io.IOException;
 import java.util.Queue;
+
+import models.GameBoard;
+import models.Player;
+
 import org.eclipse.jetty.websocket.api.Session;
 
 class PlayGame {
@@ -24,7 +29,12 @@ class PlayGame {
     app.post("/echo", ctx -> {
       ctx.result(ctx.body());
     });
-
+    
+    // Create a new game
+    app.get("/newgame", ctx -> {
+      ctx.redirect("/tictactoe.html");
+    });
+    
     /**
      * Please add your end points here.
      * 
