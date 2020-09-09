@@ -47,6 +47,11 @@ class PlayGame {
       
       ctx.result(new Gson().toJson(board)).contentType("application/json");
     });
+    
+    // Join an existing game
+    app.get("/joingame", ctx -> {
+      ctx.redirect("/tictactoe.html?p=2");
+    });
 
     /**
      * Please add your end points here.
