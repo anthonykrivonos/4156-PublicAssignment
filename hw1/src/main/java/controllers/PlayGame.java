@@ -1,16 +1,14 @@
 package controllers;
 
 import com.google.gson.Gson;
-
+import com.google.gson.JsonObject;
 import io.javalin.Javalin;
-
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Queue;
-
+import java.util.concurrent.TimeUnit;
 import models.GameBoard;
+import models.Message;
 import models.Player;
-
 import org.eclipse.jetty.websocket.api.Session;
 
 class PlayGame {
@@ -18,6 +16,8 @@ class PlayGame {
   private static final int PORT_NUMBER = 8080;
 
   private static Javalin app;
+  
+  private static GameBoard board;
 
   /** Main method of the application.
    * @param args Command line arguments
@@ -40,41 +40,118 @@ class PlayGame {
     
     // Start a new game
     app.post("/startgame", ctx -> {
+      if (ctx.formParam("type").length() != 1
+          || (ctx.formParam("type") != "X" && ctx.formParam("type") != "O")) {
+        ctx.status(400).result("invalid type");
+        return;
+      }
+    
+      // Extract the player type and construct the board.
       final char type = ctx.formParam("type").charAt(0);
-      
-      final GameBoard board = new GameBoard(new Player(type, 1), null,
-          false, 1, new char[3][3], 0, false);
-      
-      ctx.result(new Gson().toJson(board)).contentType("application/json");
+      board = new GameBoard(type);
+
+      sendGameBoardToAllPlayers(board.toJson());
+      ctx.status(200).result(board.toJson()).contentType("application/json");
     });
     
     // Join an existing game
     app.get("/joingame", ctx -> {
+      if (board == null) {
+        ctx.status(500).result("board not initialized");
+        return;
+      }
+
+      // Try to start the game
+      try {
+        board.joinGame();
+      } catch (Exception e) {
+        ctx.status(400).result(e.getMessage());
+        return;
+      }
+      
+      // Send board after an async delay to allow p2 to redirect
+      sendGameBoardToAllPlayers(board.toJson(), 1);
       ctx.redirect("/tictactoe.html?p=2");
     });
-
-    /**
-     * Please add your end points here.
-     * 
-     * 
-     * 
-     * 
-     * Please add your end points here.
-     * 
-     * 
-     * 
-     * 
-     * Please add your end points here.
-     * 
-     * 
-     * 
-     * 
-     * Please add your end points here.
-     * 
-     */
+    
+    // Perform a move by the given player
+    app.get("/move/:playerId", ctx -> {
+      System.out.println("/move/");
+      if (board == null) {
+        ctx.status(400).result("board not initialized");
+        return;
+      }
+      if (!board.isGameStarted()) {
+        ctx.status(400).result("game not started");
+        return;
+      }
+      
+      ctx.contentType("application/json");
+      
+      // Ensure the game is still going
+      if (board.getWinner() != 0) {
+        ctx.status(400).result(new Message(false, 101, "game already over").toJson());
+        return;
+      }
+      
+      // Ensure a player ID is provided
+      if (ctx.pathParam("playerId").length() != 1) {
+        ctx.status(400).result(new Message(false, 102, "invalid playerId").toJson());
+        return;
+      }
+      
+      // Ensure the player ID is valid
+      final int playerId = Integer.parseInt(ctx.pathParam("playerId"));
+      if (playerId != 1 && playerId != 2) {
+        ctx.status(400).result(new Message(false, 103, "incorrect playerId").toJson());
+        return;
+      }
+      
+      // Ensure position is provided
+      if (ctx.formParam("x").isBlank() || ctx.formParam("y").isBlank()) {
+        ctx.status(400).result(new Message(false, 104, "missing position").toJson());
+        return;
+      }
+      
+      // Extract the necessary information to play a turn
+      final Player p = playerId == 1 ? board.getP1() : board.getP2();
+      final int x = Integer.parseInt(ctx.formParam("x"));
+      final int y = Integer.parseInt(ctx.formParam("y"));
+      
+      // Try to play a turn and throw an exception if it cannot be played
+      try {
+        board.playTurn(p, x, y);
+      } catch (Exception e) {
+        ctx.status(400).result(new Message(false, 105, e.getMessage()).toJson());
+        return;
+      }
+      
+      sendGameBoardToAllPlayers(board.toJson());
+      ctx.status(200).result(new Message(true, 100, "").toJson());
+    });
 
     // Web sockets - DO NOT DELETE or CHANGE
     app.ws("/gameboard", new UiWebSocket());
+  }
+  
+  /**
+   * Asynchronously calls sendGameBoardToAllPlayers after a delay.
+   * Catches the IO exception and prints to stack trace.
+   * @param gameBoardJson Gameboard JSON
+   * @param secDelay The number of seconds to wait before the call.
+   */
+  private static void sendGameBoardToAllPlayers(final String gameBoardJson, final int secDelay) {
+    Thread thread = new Thread(new Runnable() {
+      public void run() {
+        try {
+          TimeUnit.SECONDS.sleep(secDelay);
+          sendGameBoardToAllPlayers(new Gson().toJson(board));
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+    });
+    thread.start();
   }
 
   /** Send message to all players.
@@ -88,6 +165,7 @@ class PlayGame {
         sessionPlayer.getRemote().sendString(gameBoardJson);
       } catch (IOException e) {
         // Add logger here
+        System.err.println(e.getMessage());
       }
     }
   }
