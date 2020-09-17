@@ -21,4 +21,52 @@ public class Move {
     this.moveY = moveY;
   }
 
+  /**
+   * Gets the player who made this move.
+   * @return A Player object.
+   */
+  public Player getPlayer() {
+    return player;
+  }
+
+  /**
+   * Sets the player who made this move.
+   * @param player A Player object.
+   */
+  public void setPlayer(Player player) {
+    this.player = player;
+  }
+
+  /**
+   * Gets the x-coordinate of this move.
+   * @return The x-coordinate as an int.
+   */
+  public int getMoveX() {
+    return moveX;
+  }
+
+  /**
+   * Sets the x-coordinate of this move.
+   * @param moveX The x-coordinate as an int.
+   */
+  public void setMoveX(int moveX) {
+    this.moveX = moveX;
+  }
+
+  /**
+   * Gets the y-coordinate of this move.
+   * @return The y-coordinate as an int.
+   */
+  public int getMoveY() {
+    return moveY;
+  }
+
+  /**
+   * Sets the y-coordinate of this move.
+   * @param moveX The y-coordinate as an int.
+   */
+  public void setMoveY(int moveY) {
+    this.moveY = moveY;
+  }
+
 }
