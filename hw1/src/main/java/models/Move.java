@@ -63,7 +63,7 @@ public class Move {
 
   /**
    * Sets the y-coordinate of this move.
-   * @param moveX The y-coordinate as an int.
+   * @param moveY The y-coordinate as an int.
    */
   public void setMoveY(int moveY) {
     this.moveY = moveY;

@@ -41,7 +41,7 @@ class PlayGame {
     // Start a new game
     app.post("/startgame", ctx -> {
       if (ctx.formParam("type").isBlank() || (ctx.formParam("type").charAt(0) != 'X'
-    		  && ctx.formParam("type").charAt(0) != 'O')) {
+          && ctx.formParam("type").charAt(0) != 'O')) {
         ctx.result("Invalid type");
         return;
       }
@@ -75,12 +75,14 @@ class PlayGame {
     
     // Perform a move by the given player
     app.post("/move/:playerId", ctx -> {
+      // Ensure the game has already started
       if (board == null || !board.isGameStarted()) {
-    	// Ensure the game has already started
         ctx.status(400).result("Game not started");
         return;
-      } else if (board.isGameOver()) {
-    	// Ensure the game is still going
+      }
+      
+      // Ensure the game is still going
+      if (board.isGameOver()) {
         ctx.status(200).result(new Message(false, 101, "Game already over").toJson());
         return;
       }
@@ -105,13 +107,13 @@ class PlayGame {
       }
       
       // Extract the necessary information to play a turn
-      final Player p = playerId == 1 ? board.getP1() : board.getP2();
+      final Player player = playerId == 1 ? board.getP1() : board.getP2();
       final int x = Integer.parseInt(ctx.formParam("x"));
       final int y = Integer.parseInt(ctx.formParam("y"));
       
       // Try to play a turn and throw an exception if it cannot be played
       try {
-        board.playTurn(p, x, y);
+        board.playTurn(player, x, y);
       } catch (Exception e) {
         ctx.status(200).result(new Message(false, 105, e.getMessage()).toJson());
         return;
@@ -155,7 +157,7 @@ class PlayGame {
       try {
         sessionPlayer.getRemote().sendString(gameBoardJson);
       } catch (IOException e) {
-    	e.printStackTrace();
+        e.printStackTrace();
       }
     }
   }
