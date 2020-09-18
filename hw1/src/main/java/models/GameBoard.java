@@ -46,7 +46,7 @@ public class GameBoard {
    */
   public GameBoard(char p1Type) {
     super();
-    this.p1 = new Player(type, 1);
+    this.p1 = new Player(p1Type, 1);
     this.gameStarted = false;
     this.turn = 1;
     this.boardState = new char[3][3];

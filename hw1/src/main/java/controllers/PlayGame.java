@@ -40,8 +40,8 @@ class PlayGame {
     
     // Start a new game
     app.post("/startgame", ctx -> {
-      if (ctx.formParam("type").length() != 1
-          || (ctx.formParam("type") != "X" && ctx.formParam("type") != "O")) {
+      if (ctx.formParam("type").length() < 1 || (ctx.formParam("type").charAt(0) != 'X'
+    		  && ctx.formParam("type").charAt(0) != 'O')) {
         ctx.status(400).result("invalid type");
         return;
       }
@@ -50,8 +50,8 @@ class PlayGame {
       final char type = ctx.formParam("type").charAt(0);
       board = new GameBoard(type);
 
-      sendGameBoardToAllPlayers(board.toJson());
       ctx.status(200).result(board.toJson()).contentType("application/json");
+      sendGameBoardToAllPlayers(board.toJson());
     });
     
     // Join an existing game
@@ -69,14 +69,13 @@ class PlayGame {
         return;
       }
       
+      ctx.redirect("/tictactoe.html?p=2");
       // Send board after an async delay to allow p2 to redirect
       sendGameBoardToAllPlayers(board.toJson(), 1);
-      ctx.redirect("/tictactoe.html?p=2");
     });
     
     // Perform a move by the given player
     app.get("/move/:playerId", ctx -> {
-      System.out.println("/move/");
       if (board == null) {
         ctx.status(400).result("board not initialized");
         return;
@@ -164,8 +163,7 @@ class PlayGame {
       try {
         sessionPlayer.getRemote().sendString(gameBoardJson);
       } catch (IOException e) {
-        // Add logger here
-        System.err.println(e.getMessage());
+    	e.printStackTrace();
       }
     }
   }
