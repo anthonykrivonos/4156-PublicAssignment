@@ -40,9 +40,9 @@ class PlayGame {
     
     // Start a new game
     app.post("/startgame", ctx -> {
-      if (ctx.formParam("type").length() < 1 || (ctx.formParam("type").charAt(0) != 'X'
+      if (ctx.formParam("type").isBlank() || (ctx.formParam("type").charAt(0) != 'X'
     		  && ctx.formParam("type").charAt(0) != 'O')) {
-        ctx.status(400).result("invalid type");
+        ctx.result("Invalid type");
         return;
       }
     
@@ -50,14 +50,13 @@ class PlayGame {
       final char type = ctx.formParam("type").charAt(0);
       board = new GameBoard(type);
 
-      ctx.status(200).result(board.toJson()).contentType("application/json");
-      sendGameBoardToAllPlayers(board.toJson());
+      ctx.status(200).result(board.toJson());
     });
     
     // Join an existing game
     app.get("/joingame", ctx -> {
       if (board == null) {
-        ctx.status(500).result("board not initialized");
+        ctx.status(500).result("Board not initialized");
         return;
       }
 
@@ -75,40 +74,33 @@ class PlayGame {
     });
     
     // Perform a move by the given player
-    app.get("/move/:playerId", ctx -> {
-      if (board == null) {
-        ctx.status(400).result("board not initialized");
+    app.post("/move/:playerId", ctx -> {
+      if (board == null || !board.isGameStarted()) {
+    	// Ensure the game has already started
+        ctx.status(400).result("Game not started");
         return;
-      }
-      if (!board.isGameStarted()) {
-        ctx.status(400).result("game not started");
-        return;
-      }
-      
-      ctx.contentType("application/json");
-      
-      // Ensure the game is still going
-      if (board.getWinner() != 0) {
-        ctx.status(400).result(new Message(false, 101, "game already over").toJson());
+      } else if (board.isGameOver()) {
+    	// Ensure the game is still going
+        ctx.status(200).result(new Message(false, 101, "Game already over").toJson());
         return;
       }
       
       // Ensure a player ID is provided
       if (ctx.pathParam("playerId").length() != 1) {
-        ctx.status(400).result(new Message(false, 102, "invalid playerId").toJson());
+        ctx.status(200).result(new Message(false, 102, "Invalid playerId").toJson());
         return;
       }
       
       // Ensure the player ID is valid
       final int playerId = Integer.parseInt(ctx.pathParam("playerId"));
       if (playerId != 1 && playerId != 2) {
-        ctx.status(400).result(new Message(false, 103, "incorrect playerId").toJson());
+        ctx.status(200).result(new Message(false, 103, "Incorrect playerId").toJson());
         return;
       }
       
       // Ensure position is provided
       if (ctx.formParam("x").isBlank() || ctx.formParam("y").isBlank()) {
-        ctx.status(400).result(new Message(false, 104, "missing position").toJson());
+        ctx.status(200).result(new Message(false, 104, "Missing position").toJson());
         return;
       }
       
@@ -121,12 +113,12 @@ class PlayGame {
       try {
         board.playTurn(p, x, y);
       } catch (Exception e) {
-        ctx.status(400).result(new Message(false, 105, e.getMessage()).toJson());
+        ctx.status(200).result(new Message(false, 105, e.getMessage()).toJson());
         return;
       }
       
-      sendGameBoardToAllPlayers(board.toJson());
       ctx.status(200).result(new Message(true, 100, "").toJson());
+      sendGameBoardToAllPlayers(board.toJson());
     });
 
     // Web sockets - DO NOT DELETE or CHANGE

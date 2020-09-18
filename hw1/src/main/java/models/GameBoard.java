@@ -83,6 +83,14 @@ public class GameBoard {
   public void setP2(Player p2) {
     this.p2 = p2;
   }
+  
+  /**
+   * Checks if the game has ended.
+   * @return True if the game is over, false otherwise.
+   */
+  public boolean isGameOver() {
+    return winner != 0 || isDraw;
+  }
 
   /**
    * Checks if the game has started.
@@ -170,7 +178,7 @@ public class GameBoard {
    */
   public void joinGame() throws Exception {
     if (gameStarted && (winner != 0 || isDraw)) {
-      throw new Exception("game already started");
+      throw new Exception("Game already started");
     }
     p2 = new Player(p1.getType() == 'X' ? 'O' : 'X', 2);
     gameStarted = true;
@@ -188,11 +196,11 @@ public class GameBoard {
   public void playTurn(Player player, int x, int y) throws Exception {
     final char type = player.getType();
     if (x < 0 || y < 0 || x > 2 || y > 2) {
-      throw new Exception("playTurn: invalid position");
+      throw new Exception("Invalid position");
     } else if (boardState[x][y] != '\0') {
-      throw new Exception("playTurn: position already filled");
+      throw new Exception("Position already filled");
     } else if (player.getId() != turn) {
-      throw new Exception("playTurn: not your turn");
+      throw new Exception("Not your turn");
     }
     boardState[x][y] = type;
     updateWinner();
