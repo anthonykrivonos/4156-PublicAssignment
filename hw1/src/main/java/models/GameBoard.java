@@ -20,7 +20,6 @@ public class GameBoard {
 
 	/**
 	 * Constructs a new game board.
-	 * 
 	 * @param p1          Player 1 object.
 	 * @param p2          Player 2 object.
 	 * @param gameStarted True if the game has started, false otherwise.
@@ -43,7 +42,6 @@ public class GameBoard {
 
 	/**
 	 * Starts a fresh game.
-	 * 
 	 * @param p1Type Player 1's type.
 	 */
 	public GameBoard(char p1Type) {
@@ -58,8 +56,7 @@ public class GameBoard {
 
 	/**
 	 * Gets the first player.
-	 * 
-	 * @return the p1
+	 * @return The Player 1 object.
 	 */
 	public Player getP1() {
 		return p1;
@@ -67,6 +64,7 @@ public class GameBoard {
 
 	/**
 	 * Sets the first player.
+	 * @param p1 The Player 1 object.
 	 */
 	public void setP1(Player p1) {
 		this.p1 = p1;
@@ -74,8 +72,7 @@ public class GameBoard {
 
 	/**
 	 * Gets the second player.
-	 * 
-	 * @return the p2
+	 * @return The Player 2 object.
 	 */
 	public Player getP2() {
 		return p2;
@@ -83,6 +80,7 @@ public class GameBoard {
 
 	/**
 	 * Sets the second player.
+	 * @param p2 The Player 2 object.
 	 */
 	public void setP2(Player p2) {
 		this.p2 = p2;
@@ -90,7 +88,6 @@ public class GameBoard {
 
 	/**
 	 * Checks if the game has ended.
-	 * 
 	 * @return True if the game is over, false otherwise.
 	 */
 	public boolean isGameOver() {
@@ -99,8 +96,7 @@ public class GameBoard {
 
 	/**
 	 * Checks if the game has started.
-	 * 
-	 * @return the gameStarted
+	 * @return True if the game has started, false otherwise.
 	 */
 	public boolean isGameStarted() {
 		return gameStarted;
@@ -108,8 +104,7 @@ public class GameBoard {
 
 	/**
 	 * Changes whether or not the game is started.
-	 * 
-	 * @param gameStarted the gameStarted to set
+	 * @param gameStarted True if the game is started, false otherwise.
 	 */
 	public void setGameStarted(boolean gameStarted) {
 		this.gameStarted = gameStarted;
@@ -117,8 +112,7 @@ public class GameBoard {
 
 	/**
 	 * Gets the player ID for whose turn it currently is.
-	 * 
-	 * @return the turn
+	 * @return The numerical turn.
 	 */
 	public int getTurn() {
 		return turn;
@@ -126,44 +120,39 @@ public class GameBoard {
 
 	/**
 	 * Sets the player ID for whose turn it currently is.
-	 * 
-	 * @param turn the turn to set
+	 * @param turn The numerical turn to set.
 	 */
 	public void setTurn(int turn) {
 		this.turn = turn;
 	}
 
 	/**
-	 * Gets the board as a 2D array.
-	 * 
-	 * @return the boardState
+	 * Gets the board as a 2D char array.
+	 * @return The 2d char array representation of the board.
 	 */
 	public char[][] getBoardState() {
 		return boardState;
 	}
 
 	/**
-	 * Sets the 2D array board.
-	 * 
-	 * @param boardState the boardState to set
+	 * Sets the 2D char array board.
+	 * @param boardState The 2d char array representation of the board.
 	 */
 	public void setBoardState(char[][] boardState) {
 		this.boardState = boardState;
 	}
 
 	/**
-	 * Returns the winning player number.
-	 * 
-	 * @return the winner
+	 * Returns the winning player ID.
+	 * @return The ID of the winning player.
 	 */
 	public int getWinner() {
 		return winner;
 	}
 
 	/**
-	 * Sets the winning player number.
-	 * 
-	 * @param winner the winner to set
+	 * Sets the winning player ID.
+	 * @param winner The ID of the winning player.
 	 */
 	public void setWinner(int winner) {
 		this.winner = winner;
@@ -171,8 +160,7 @@ public class GameBoard {
 
 	/**
 	 * Returns true if there is a draw.
-	 * 
-	 * @return the isDraw
+	 * @return True if there is a draw, false otherwise.
 	 */
 	public boolean isDraw() {
 		return isDraw;
@@ -180,8 +168,7 @@ public class GameBoard {
 
 	/**
 	 * Sets whether or not there is a draw.
-	 * 
-	 * @param isDraw the isDraw to set
+	 * @param isDraw True if there is a draw, false otherwise.
 	 */
 	public void setDraw(boolean isDraw) {
 		this.isDraw = isDraw;
@@ -189,7 +176,6 @@ public class GameBoard {
 
 	/**
 	 * Lets a second player join the game, and starts the game.
-	 * 
 	 * @throws Exception A simple exception thrown if the game has already started
 	 *                   and has not ended.
 	 */
@@ -203,7 +189,6 @@ public class GameBoard {
 
 	/**
 	 * Plays a turn for the given player in the (x, y) coordinate specified.
-	 * 
 	 * @param player The player to play the turn for.
 	 * @param x      The x-position.
 	 * @param y      The y-position.
@@ -228,12 +213,18 @@ public class GameBoard {
 	 * Updates the Gameboard with the winner and whether or not there is a draw.
 	 */
 	private void updateWinner() {
+		// True if P1 wins
 		boolean p1Wins = false;
+		// True if P2 wins
 		boolean p2Wins = false;
+		// True if the board contains an empty spot
 		boolean containsEmpty = false;
 
+		// Counts the number of P1 moves (reused)
 		int countP1 = 0;
+		// Counts the number of P2 moves (reused)
 		int countP2 = 0;
+		// Stores the currently located move in each iteration
 		char move = '\0';
 
 		// Check horizontally
@@ -314,7 +305,6 @@ public class GameBoard {
 
 	/**
 	 * Convert this Board into a JSON string.
-	 * 
 	 * @return A JSON Board string.
 	 */
 	public String toJson() {

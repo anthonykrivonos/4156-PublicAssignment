@@ -39,7 +39,7 @@ public class Move {
 
   /**
    * Gets the x-coordinate of this move.
-   * @return The x-coordinate as an int.
+   * @return The x-coordinate as an integer.
    */
   public int getMoveX() {
     return moveX;
@@ -47,7 +47,7 @@ public class Move {
 
   /**
    * Sets the x-coordinate of this move.
-   * @param moveX The x-coordinate as an int.
+   * @param moveX The x-coordinate as an integer.
    */
   public void setMoveX(int moveX) {
     this.moveX = moveX;
@@ -55,7 +55,7 @@ public class Move {
 
   /**
    * Gets the y-coordinate of this move.
-   * @return The y-coordinate as an int.
+   * @return The y-coordinate as an integer.
    */
   public int getMoveY() {
     return moveY;
@@ -63,7 +63,7 @@ public class Move {
 
   /**
    * Sets the y-coordinate of this move.
-   * @param moveY The y-coordinate as an int.
+   * @param moveY The y-coordinate as an integer.
    */
   public void setMoveY(int moveY) {
     this.moveY = moveY;

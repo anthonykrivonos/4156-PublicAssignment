@@ -147,7 +147,8 @@ class PlayGame {
     thread.start();
   }
 
-  /** Send message to all players.
+  /**
+   * Send message to all players.
    * @param gameBoardJson Gameboard JSON
    * @throws IOException Websocket message send IO Exception
    */

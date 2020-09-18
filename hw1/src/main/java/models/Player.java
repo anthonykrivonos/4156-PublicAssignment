@@ -19,7 +19,7 @@ public class Player {
 
   /**
    * 'X' or 'O' for the player.
-   * @return the type
+   * @return The character the player uses in the game.
    */
   public char getType() {
     return type;
@@ -27,7 +27,7 @@ public class Player {
 
   /**
    * Sets 'X' or 'O' for the player.
-   * @param type the type to set
+   * @param type The character the player uses in the game.
    */
   public void setType(char type) {
     this.type = type;
@@ -35,7 +35,7 @@ public class Player {
 
   /**
    * Gets the player's ID (1 or 2).
-   * @return the id
+   * @return The numerical Player ID.
    */
   public int getId() {
     return id;
@@ -43,7 +43,7 @@ public class Player {
 
   /**
    * Sets the player's ID.
-   * @param id the id to set
+   * @param id The numerical Player ID.
    */
   public void setId(int id) {
     this.id = id;
