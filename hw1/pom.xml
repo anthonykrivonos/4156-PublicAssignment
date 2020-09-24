@@ -11,6 +11,20 @@
 	    <version>3.9.1</version>
 	</dependency>
 	
+	<!-- JUnit Lib  -->
+	<dependency>
+	    <groupId>org.junit.jupiter</groupId>
+	    <artifactId>junit-jupiter-api</artifactId>
+	    <version>5.7.0</version>
+	    <scope>test</scope>
+	</dependency>
+	<dependency>
+		<groupId>org.junit.platform</groupId>
+		<artifactId>junit-platform-runner</artifactId>
+		<version>1.5.2</version>
+	    <scope>test</scope>
+	</dependency>
+	
 	<!--  Logging Lib -->
 	<dependency>
 	    <groupId>org.slf4j</groupId>
