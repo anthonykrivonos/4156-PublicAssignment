@@ -38,7 +38,7 @@ public class GameBoardTest {
 		Assertions.assertEquals(null, board.getP2());
 		Assertions.assertEquals(false, board.isGameStarted());
 		Assertions.assertEquals(1, board.getTurn());
-		Assertions.assertEquals(new char[3][3], board.getBoardState());
+		Assertions.assertArrayEquals(new char[3][3], board.getBoardState());
 		Assertions.assertEquals(0, board.getWinner());
 		Assertions.assertEquals(false, board.isDraw());
 	}
@@ -84,7 +84,7 @@ public class GameBoardTest {
 		final GameBoard board = new GameBoard('X');
 		
 		final Player newP2 = new Player('O', 2);
-		board.setP1(newP2);
+		board.setP2(newP2);
 		
 		Assertions.assertEquals(newP2.getId(), board.getP2().getId());
 		Assertions.assertEquals(newP2.getType(), board.getP2().getType());
@@ -137,7 +137,7 @@ public class GameBoardTest {
 		final GameBoard board = new GameBoard('X');
 		
 		final boolean isDraw = true;
-		board.setGameStarted(isDraw);
+		board.setDraw(isDraw);
 		
 		Assertions.assertEquals(isDraw, board.isDraw());
 	}
@@ -167,9 +167,6 @@ public class GameBoardTest {
 		
 		try {
 			board.joinGame();
-			
-			// Will not reach if the test fails
-			Assertions.fail();
 		} catch (Exception e) {
 			Assertions.assertEquals("Game already started", e.getMessage());
 		}
