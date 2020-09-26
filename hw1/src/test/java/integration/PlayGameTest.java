@@ -25,7 +25,7 @@ public class PlayGameTest {
   @BeforeAll
   public static void init() {
     // Start Server
-    PlayGame.main(null);
+    PlayGame.main(new String[0]);
     System.out.println("[Before All] Starting server");
   }
 

@@ -27,7 +27,7 @@ public class GameBoardTest {
 		Assertions.assertEquals(p2, board.getP2());
 		Assertions.assertEquals(gameStarted, board.isGameStarted());
 		Assertions.assertEquals(turn, board.getTurn());
-		Assertions.assertEquals(boardState, board.getBoardState());
+		Assertions.assertArrayEquals(boardState, board.getBoardState());
 		Assertions.assertEquals(winner, board.getWinner());
 		Assertions.assertEquals(isDraw, board.isDraw());
 	}
