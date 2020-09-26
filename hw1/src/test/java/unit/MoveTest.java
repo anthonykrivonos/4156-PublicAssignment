@@ -1,7 +1,10 @@
-package models;
+package unit;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import models.Move;
+import models.Player;
 
 public class MoveTest {
 	
@@ -10,7 +13,7 @@ public class MoveTest {
 	 */
 
 	@Test
-	void testMoveConstructor() {
+	public void testMoveConstructor() {
 		final Player p1 = new Player('X', 1);
 		final int x = 0;
 		final int y = 0;
@@ -27,7 +30,7 @@ public class MoveTest {
 	 */
 	
 	@Test
-	void testSetPlayer() {
+	public void testSetPlayer() {
 		final Move move = new Move(new Player('X', 1), 0, 0);
 		
 		final Player p2 = new Player('O', 2);
@@ -38,7 +41,7 @@ public class MoveTest {
 	}
 	
 	@Test
-	void testSetMoveX() {
+	public void testSetMoveX() {
 		final Move move = new Move(new Player('X', 1), 0, 0);
 		
 		final int x = 1;
@@ -48,7 +51,7 @@ public class MoveTest {
 	}
 	
 	@Test
-	void testSetMoveY() {
+	public void testSetMoveY() {
 		final Move move = new Move(new Player('X', 1), 0, 0);
 		
 		final int y = 1;

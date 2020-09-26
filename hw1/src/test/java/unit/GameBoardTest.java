@@ -1,7 +1,10 @@
-package models;
+package unit;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import models.GameBoard;
+import models.Player;
 
 public class GameBoardTest {
 	
@@ -10,7 +13,7 @@ public class GameBoardTest {
 	 */
 
 	@Test
-	void testGameBoardConstructor() {
+	public void testGameBoardConstructor() {
 		final Player p1 = new Player('X', 1);
 		final Player p2 = new Player('O', 1);
 		final boolean gameStarted = false;
@@ -30,7 +33,7 @@ public class GameBoardTest {
 	}
 
 	@Test
-	void testGameBoardP1Constructor() {
+	public void testGameBoardP1Constructor() {
 		final char p1Type = 'X';
 		final GameBoard board = new GameBoard(p1Type);
 				
@@ -48,7 +51,7 @@ public class GameBoardTest {
 	 */
 	
 	@Test
-	void testIsGameOver() {
+	public void testIsGameOver() {
 		final GameBoard board = new GameBoard('X');
 		
 		// winner == 0 && !isDraw
@@ -69,7 +72,7 @@ public class GameBoardTest {
 	 */
 	
 	@Test
-	void testSetP1() {
+	public void testSetP1() {
 		final GameBoard board = new GameBoard('X');
 		
 		final Player newP1 = new Player('X', 1);
@@ -80,7 +83,7 @@ public class GameBoardTest {
 	}
 	
 	@Test
-	void testSetP2() {
+	public void testSetP2() {
 		final GameBoard board = new GameBoard('X');
 		
 		final Player newP2 = new Player('O', 2);
@@ -91,7 +94,7 @@ public class GameBoardTest {
 	}
 	
 	@Test
-	void testSetGameStarted() {
+	public void testSetGameStarted() {
 		final GameBoard board = new GameBoard('X');
 		
 		final boolean gameStarted = true;
@@ -101,7 +104,7 @@ public class GameBoardTest {
 	}
 	
 	@Test
-	void testSetTurn() {
+	public void testSetTurn() {
 		final GameBoard board = new GameBoard('X');
 		
 		final int turn = 1;
@@ -111,7 +114,7 @@ public class GameBoardTest {
 	}
 	
 	@Test
-	void testSetBoardState() {
+	public void testSetBoardState() {
 		final GameBoard board = new GameBoard('X');
 		
 		final char[][] boardState = new char[3][3];
@@ -122,7 +125,7 @@ public class GameBoardTest {
 	}
 	
 	@Test
-	void testSetWinner() {
+	public void testSetWinner() {
 		final GameBoard board = new GameBoard('X');
 		
 		final int winner = 1;
@@ -133,7 +136,7 @@ public class GameBoardTest {
 
 	
 	@Test
-	void testSetDraw() {
+	public void testSetDraw() {
 		final GameBoard board = new GameBoard('X');
 		
 		final boolean isDraw = true;
@@ -147,7 +150,7 @@ public class GameBoardTest {
 	 */
 	
 	@Test
-	void testJoinGameSuccess() {
+	public void testJoinGameSuccess() {
 		final GameBoard board = new GameBoard('X');
 		
 		try {
@@ -161,7 +164,7 @@ public class GameBoardTest {
 	}
 	
 	@Test
-	void testJoinGameFailure() {
+	public void testJoinGameFailure() {
 		final GameBoard board = new GameBoard('X');
 		board.setWinner(1);
 		
@@ -177,7 +180,7 @@ public class GameBoardTest {
 	 */
 	
 	@Test
-	void testPlayTurnFailure_InvalidPosition() {
+	public void testPlayTurnFailure_InvalidPosition() {
 		final GameBoard board = new GameBoard('X');
 		try {
 			board.joinGame();
@@ -193,7 +196,7 @@ public class GameBoardTest {
 	}
 	
 	@Test
-	void testPlayTurnFailure_PositionAlreadyFilled() {
+	public void testPlayTurnFailure_PositionAlreadyFilled() {
 		final GameBoard board = new GameBoard('X');
 		try {
 			board.joinGame();
@@ -210,7 +213,7 @@ public class GameBoardTest {
 	}
 	
 	@Test
-	void testPlayTurnFailure_NotYourTurn() {
+	public void testPlayTurnFailure_NotYourTurn() {
 		final GameBoard board = new GameBoard('X');
 		try {
 			board.joinGame();
@@ -226,7 +229,7 @@ public class GameBoardTest {
 	}
 	
 	@Test
-	void testPlayTurnSuccess_NextTurn() {
+	public void testPlayTurnSuccess_NextTurn() {
 		final GameBoard board = new GameBoard('X');
 		try {
 			board.joinGame();
@@ -244,7 +247,7 @@ public class GameBoardTest {
 	}
 	
 	@Test
-	void testPlayTurnSuccess_P1Wins() {
+	public void testPlayTurnSuccess_P1Wins() {
 		final GameBoard board = new GameBoard('X');
 		try {
 			board.joinGame();
@@ -266,7 +269,7 @@ public class GameBoardTest {
 	}
 	
 	@Test
-	void testPlayTurnSuccess_P2Wins() {
+	public void testPlayTurnSuccess_P2Wins() {
 		final GameBoard board = new GameBoard('X');
 		try {
 			board.joinGame();
@@ -289,7 +292,7 @@ public class GameBoardTest {
 	}
 	
 	@Test
-	void testPlayTurnSuccess_Draw() {
+	public void testPlayTurnSuccess_Draw() {
 		final GameBoard board = new GameBoard('X');
 		try {
 			board.joinGame();
@@ -320,7 +323,7 @@ public class GameBoardTest {
 	 */
 	
 	@Test
-	void testToJson() {
+	public void testToJson() {
 		final GameBoard board = new GameBoard('X');
 		
 		Assertions.assertNotEquals("", board.toJson());

@@ -1,7 +1,9 @@
-package models;
+package unit;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import models.Player;
 
 public class PlayerTest {
 	
@@ -10,7 +12,7 @@ public class PlayerTest {
 	 */
 
 	@Test
-	void testPlayerConstructor() {
+	public void testPlayerConstructor() {
 		final char type = 'X';
 		final int id = 1;
 		final Player player = new Player(type, id);
@@ -24,7 +26,7 @@ public class PlayerTest {
 	 */
 	
 	@Test
-	void testSetType() {
+	public void testSetType() {
 		final Player player = new Player('X', 1);
 		
 		final char type = 'O';
@@ -34,7 +36,7 @@ public class PlayerTest {
 	}
 	
 	@Test
-	void testSetId() {
+	public void testSetId() {
 		final Player player = new Player('X', 1);
 		
 		final int id = 2;

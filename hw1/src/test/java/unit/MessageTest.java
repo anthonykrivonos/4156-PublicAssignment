@@ -1,7 +1,9 @@
-package models;
+package unit;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import models.Message;
 
 public class MessageTest {
 	
@@ -10,7 +12,7 @@ public class MessageTest {
 	 */
 
 	@Test
-	void testMessageConstructor() {
+	public void testMessageConstructor() {
 		final boolean moveValidity = true;
 		final int code = 100;
 		final String message = "Valid move.";
@@ -26,7 +28,7 @@ public class MessageTest {
 	 */
 	
 	@Test
-	void testSetMoveValidity() {
+	public void testSetMoveValidity() {
 		final Message msg = new Message(true, 100, "");
 		
 		msg.setMoveValidity(false);
@@ -35,7 +37,7 @@ public class MessageTest {
 	}
 	
 	@Test
-	void testSetCode() {
+	public void testSetCode() {
 		final Message msg = new Message(true, 100, "");
 		
 		msg.setCode(300);
@@ -44,7 +46,7 @@ public class MessageTest {
 	}
 	
 	@Test
-	void testSetMessage() {
+	public void testSetMessage() {
 		final Message msg = new Message(true, 100, "");
 		
 		msg.setMessage("Message");
@@ -57,7 +59,7 @@ public class MessageTest {
 	 */
 	
 	@Test
-	void testToJson() {
+	public void testToJson() {
 		final Message msg = new Message(true, 100, "");
 		
 		Assertions.assertNotEquals("", msg.toJson());
