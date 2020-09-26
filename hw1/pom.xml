@@ -25,6 +25,13 @@
 	    <scope>test</scope>
 	</dependency>
 	
+	<!-- Uni-rest Java Lib -->
+	<dependency>
+	    <groupId>com.konghq</groupId>
+	    <artifactId>unirest-java</artifactId>
+	    <version>3.10.00</version>
+	</dependency>
+	
 	<!--  Logging Lib -->
 	<dependency>
 	    <groupId>org.slf4j</groupId>
