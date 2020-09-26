@@ -1,17 +1,17 @@
 package controllers;
 
+import models.GameBoard;
+import models.Message;
+import models.Player;
+
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import io.javalin.Javalin;
 import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
-import models.GameBoard;
-import models.Message;
-import models.Player;
 import org.eclipse.jetty.websocket.api.Session;
 
-class PlayGame {
+public class PlayGame {
 
   private static final int PORT_NUMBER = 8080;
 
@@ -27,14 +27,10 @@ class PlayGame {
     app = Javalin.create(config -> {
       config.addStaticFiles("/public");
     }).start(PORT_NUMBER);
-
-    // Test Echo Server
-    app.post("/echo", ctx -> {
-      ctx.result(ctx.body());
-    });
     
     // Create a new game
     app.get("/newgame", ctx -> {
+      board = null;
       ctx.redirect("/tictactoe.html");
     });
     
@@ -42,7 +38,7 @@ class PlayGame {
     app.post("/startgame", ctx -> {
       if (ctx.formParam("type").isBlank() || (ctx.formParam("type").charAt(0) != 'X'
           && ctx.formParam("type").charAt(0) != 'O')) {
-        ctx.result("Invalid type");
+        ctx.status(500).result("Invalid type");
         return;
       }
     
@@ -68,7 +64,7 @@ class PlayGame {
         return;
       }
       
-      ctx.redirect("/tictactoe.html?p=2");
+      ctx.status(302).redirect("/tictactoe.html?p=2");
       // Send board after an async delay to allow p2 to redirect
       sendGameBoardToAllPlayers(board.toJson(), 1);
     });
