@@ -72,7 +72,12 @@ public class PlayGame {
     // Perform a move by the given player
     app.post("/move/:playerId", ctx -> {
       // Ensure the game has already started
-      if (board == null || !board.isGameStarted()) {
+      if (board == null) {
+        ctx.status(400).result("Board not initialized");
+        return;
+      }
+      
+      if (!board.isGameStarted()) {
         ctx.status(400).result("Game not started");
         return;
       }

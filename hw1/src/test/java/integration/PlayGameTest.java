@@ -129,7 +129,7 @@ public class PlayGameTest {
   @Order(6)
   public void testJoinGameFailure_GameAlreadyStarted() {
     // Start the game and join the game already
-    Unirest.post("http://localhost:8080/startgame").body("type=X").asString();
+    Unirest.post("http://localhost:8080/startgame").body("type=O").asString();
     Unirest.get("http://localhost:8080/joingame").asString();
 
     // Play until the game ends in a draw
@@ -182,7 +182,7 @@ public class PlayGameTest {
 
   @Test
   @Order(8)
-  public void testMoveFailure_GameNotStarted_NoStart() {
+  public void testMoveFailure_BoardNotInitialized() {
     // Make a move as player 1 without starting the game or joining the game
     HttpResponse<String> response = Unirest.post("http://localhost:8080/move/1").body("x=1&y=1").asString();
     int resStatus = response.getStatus();
@@ -190,15 +190,15 @@ public class PlayGameTest {
 
     // Assert the server responds with 400 Bad Request
     Assertions.assertEquals(400, resStatus);
-    Assertions.assertEquals("Game not started", resBody);
+    Assertions.assertEquals("Board not initialized", resBody);
 
-    System.out.println("[Order 8] Tested /move Game Not Started (No Start)");
+    System.out.println("[Order 8] Tested /move Board Not Initialized");
   }
 
   @Test
   @Order(9)
-  public void testMoveFailure_GameNotStarted_NoJoin() {
-    Unirest.post("http://localhost:8080/startgame").body("type=X");
+  public void testMoveFailure_GameNotStarted() {
+    Unirest.post("http://localhost:8080/startgame").body("type=X").asString();
 
     // Make a move as player 1 without joining the game
     HttpResponse<String> response = Unirest.post("http://localhost:8080/move/1").body("x=1&y=1").asString();
@@ -209,7 +209,7 @@ public class PlayGameTest {
     Assertions.assertEquals(400, resStatus);
     Assertions.assertEquals("Game not started", resBody);
 
-    System.out.println("[Order 9] Tested /move Game Not Started (No Join)");
+    System.out.println("[Order 9] Tested /move Game Not Started");
   }
 
   @Test

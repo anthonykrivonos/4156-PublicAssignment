@@ -181,7 +181,7 @@ public class GameBoard {
 	 */
 	public void joinGame() throws Exception {
 		if (gameStarted && (winner != 0 || isDraw)) {
-			throw new Exception("Game already started");
+      throw new Exception("Game already started");
 		}
 		p2 = new Player(p1.getType() == 'X' ? 'O' : 'X', 2);
 		gameStarted = true;
@@ -288,7 +288,7 @@ public class GameBoard {
 			p2Wins = true;
 		}
 
-		if ((p1Wins && p2Wins) || (!p1Wins && !p2Wins && !containsEmpty)) {
+		if (!p1Wins && !p2Wins && !containsEmpty) {
 			// Draw situation
 			setDraw(true);
 		} else if (p1Wins) {
