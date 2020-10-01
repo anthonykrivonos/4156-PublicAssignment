@@ -5,31 +5,11 @@
   <version>0.0.1-SNAPSHOT</version>
   
   <dependencies>
+  	
   	<dependency>
 	    <groupId>io.javalin</groupId>
 	    <artifactId>javalin</artifactId>
 	    <version>3.9.1</version>
-	</dependency>
-	
-	<!-- JUnit Lib  -->
-	<dependency>
-	    <groupId>org.junit.jupiter</groupId>
-	    <artifactId>junit-jupiter-engine</artifactId>
-	    <version>5.5.2</version>
-	    <scope>test</scope>
-	</dependency>
-	<dependency>
-		<groupId>org.junit.platform</groupId>
-		<artifactId>junit-platform-runner</artifactId>
-		<version>1.5.2</version>
-	    <scope>test</scope>
-	</dependency>
-	
-	<!-- Uni-rest Java Lib -->
-	<dependency>
-	    <groupId>com.konghq</groupId>
-	    <artifactId>unirest-java</artifactId>
-	    <version>3.10.00</version>
 	</dependency>
 	
 	<!--  Logging Lib -->
@@ -110,7 +90,7 @@
 			        <dependency>
 			            <groupId>org.junit.jupiter</groupId>
 			            <artifactId>junit-jupiter-engine</artifactId>
-			            <version>5.1.0</version>
+			            <version>5.4.0</version>
 			        </dependency>
 			    </dependencies>
 			</plugin>
