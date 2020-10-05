@@ -1,16 +1,11 @@
 package unit;
 
+import models.GameBoard;
+import models.Player;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import models.GameBoard;
-import models.Player;
-
 public class GameBoardTest {
-
-  /**
-   * Constructors
-   */
 
   @Test
   public void testGameBoardConstructor() {
@@ -46,10 +41,6 @@ public class GameBoardTest {
     Assertions.assertEquals(false, board.isDraw());
   }
 
-  /**
-   * Extraneous getters
-   */
-
   @Test
   public void testIsGameOver() {
     final GameBoard board = new GameBoard('X');
@@ -66,10 +57,6 @@ public class GameBoardTest {
     board.setDraw(true);
     Assertions.assertEquals(true, board.isGameOver());
   }
-
-  /**
-   * Setters
-   */
 
   @Test
   public void testSetP1() {
@@ -144,10 +131,6 @@ public class GameBoardTest {
     Assertions.assertEquals(isDraw, board.isDraw());
   }
 
-  /**
-   * Joining a game
-   */
-
   @Test
   public void testJoinGameSuccess() {
     final GameBoard board = new GameBoard('X');
@@ -202,10 +185,6 @@ public class GameBoardTest {
       Assertions.assertEquals("Game already started", e.getMessage());
     }
   }
-
-  /**
-   * Play turn
-   */
 
   @Test
   public void testPlayTurnFailure_InvalidPosition_XLessThanZero() {
@@ -555,10 +534,6 @@ public class GameBoardTest {
     Assertions.assertEquals(0, board.getWinner());
     Assertions.assertEquals(true, board.isDraw());
   }
-
-  /**
-   * JSON stringification
-   */
 
   @Test
   public void testToJson() {
