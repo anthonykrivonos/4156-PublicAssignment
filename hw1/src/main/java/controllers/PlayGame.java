@@ -1,14 +1,13 @@
 package controllers;
 
-import models.GameBoard;
-import models.Message;
-import models.Player;
-
 import com.google.gson.Gson;
 import io.javalin.Javalin;
 import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
+import models.GameBoard;
+import models.Message;
+import models.Player;
 import org.eclipse.jetty.websocket.api.Session;
 
 public class PlayGame {
@@ -18,11 +17,24 @@ public class PlayGame {
   private static Javalin app;
   
   private static GameBoard board;
+  
+  // Public for testing purposes
+  public static Database database;
 
   /** Main method of the application.
    * @param args Command line arguments
    */
   public static void main(final String[] args) {
+    // Initialize the database, if possible
+    try {
+      database = new Database();
+      
+      // Restore the previous state
+      board = database.get();
+    } catch (Exception e) {
+      database = null;
+      e.printStackTrace();
+    }
 
     app = Javalin.create(config -> {
       config.addStaticFiles("/public");
@@ -30,7 +42,10 @@ public class PlayGame {
     
     // Create a new game
     app.get("/newgame", ctx -> {
-      board = null;
+      if (database != null) {
+        database.unset();
+        board = null;
+      }
       ctx.redirect("/tictactoe.html");
     });
     
@@ -45,6 +60,11 @@ public class PlayGame {
       // Extract the player type and construct the board.
       final char type = ctx.formParam("type").charAt(0);
       board = new GameBoard(type);
+
+      if (database != null) {
+        // Update the board state in the database
+        database.set(board);
+      }
 
       ctx.status(200).result(board.toJson());
     });
@@ -62,6 +82,11 @@ public class PlayGame {
       } catch (Exception e) {
         ctx.status(400).result(e.getMessage());
         return;
+      }
+
+      if (database != null) {
+        // Update the board state in the database
+        database.set(board);
       }
       
       ctx.status(302).redirect("/tictactoe.html?p=2");
@@ -118,6 +143,11 @@ public class PlayGame {
       } catch (Exception e) {
         ctx.status(200).result(new Message(false, 105, e.getMessage()).toJson());
         return;
+      }
+
+      if (database != null) {
+        // Update the board state in the database
+        database.set(board);
       }
       
       ctx.status(200).result(new Message(true, 100, "").toJson());

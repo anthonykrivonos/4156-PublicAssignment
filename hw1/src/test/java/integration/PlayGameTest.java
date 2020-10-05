@@ -1,20 +1,21 @@
 package integration;
 
+import com.google.gson.Gson;
 import controllers.PlayGame;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import models.GameBoard;
 import models.Message;
-
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
-import com.google.gson.Gson;
-
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class PlayGameTest {
 
   /**
@@ -27,6 +28,9 @@ public class PlayGameTest {
     System.out.println("[Before All] Starting server");
   }
 
+  /**
+   * Tests starting a new game.
+   */
   @BeforeEach
   public void startNewGame() {
     // Call to /newgame
@@ -113,6 +117,8 @@ public class PlayGameTest {
   @Test
   @Order(5)
   public void testJoinGameFailure_BoardNotInitialized() {
+    // Unset the board
+    Unirest.get("http://localhost:8080/newgame").asString();
     // Join the game without starting it
     HttpResponse<String> response = Unirest.get("http://localhost:8080/joingame").asString();
     int resStatus = response.getStatus();
@@ -526,7 +532,449 @@ public class PlayGameTest {
 
     System.out.println("[Order 20] Tested /move Success (P2 Wins)");
   }
+  
+  @Test
+  @Order(21)
+  public void testDatabase_1_NewGameCleans() {
+    // Clear the database
+    Unirest.get("http://localhost:8080/newgame").asString();
+    
+    try {
+      Assertions.assertEquals(null, PlayGame.database.get());
+    } catch (Exception e) {
+      Assertions.fail("Getting from Database should not fail");
+    }
+    
+    System.out.println("[Order 21] Tested Database (1. New Game Cleans)");
+  }
+  
+  @Test
+  @Order(22)
+  public void testDatabase_2_CrashRestore() {
+    // Clear the database
+    Unirest.get("http://localhost:8080/newgame").asString();
+    
+    // Start the game
+    Unirest.post("http://localhost:8080/startgame").body("type=X").asString();
+    Unirest.get("http://localhost:8080/joingame").asString();
 
+    // Play a move as player 1
+    Unirest.post("http://localhost:8080/move/1").body("x=1&y=1").asString();
+    
+    GameBoard snapshot = null;
+    
+    try {
+      snapshot = PlayGame.database.get();
+    } catch (Exception e) {
+      Assertions.fail("Getting from Database should not fail");
+    }
+    
+    // Crash the game
+    PlayGame.stop();
+    
+    // Reload the game
+    PlayGame.main(new String[0]);
+    
+    // Ensure no data was lost
+    try {
+      GameBoard newSnapshot = PlayGame.database.get();
+      Assertions.assertNotNull(newSnapshot);
+      Assertions.assertEquals(snapshot.getP1().getId(), newSnapshot.getP1().getId());
+      Assertions.assertEquals(snapshot.getP1().getType(), newSnapshot.getP1().getType());
+      Assertions.assertEquals(snapshot.getP2().getId(), newSnapshot.getP2().getId());
+      Assertions.assertEquals(snapshot.getP2().getType(), newSnapshot.getP2().getType());
+      Assertions.assertEquals(snapshot.isGameStarted(), newSnapshot.isGameStarted());
+      Assertions.assertEquals(snapshot.getTurn(), newSnapshot.getTurn());
+      Assertions.assertArrayEquals(snapshot.getBoardState(), newSnapshot.getBoardState());
+      Assertions.assertEquals(snapshot.getWinner(), newSnapshot.getWinner());
+      Assertions.assertEquals(snapshot.isDraw(), newSnapshot.isDraw());
+    } catch (Exception e) {
+      Assertions.fail("Getting from Database should not fail");
+    }
+
+    // Reset settings to allow for retries while the server loads up
+    Unirest.config().reset().automaticRetries(true);
+    
+    // Make a move as player 2 in an already-filled position
+    HttpResponse<String> response = Unirest.post("http://localhost:8080/move/2").body("x=1&y=1").asString();
+    int resStatus = response.getStatus();
+    String resBody = response.getBody();
+
+    // Assert the server responds with 200 OK
+    Assertions.assertEquals(200, resStatus);
+
+    // Parse the response
+    Message message = new Gson().fromJson(resBody, Message.class);
+
+    // Ensure that player 2 cannot make the same move made before the game crashed
+    Assertions.assertEquals(false, message.isMoveValid());
+    Assertions.assertEquals(105, message.getCode());
+    Assertions.assertEquals("Position already filled", message.getMessage());
+    
+    System.out.println("[Order 22] Tested Database (2. Crash Restore)");
+  }
+  
+  @Test
+  @Order(23)
+  public void testDatabase_3_CrashRestore_Draw() {
+    // Clear the database
+    Unirest.get("http://localhost:8080/newgame").asString();
+    
+    // Start the game
+    Unirest.post("http://localhost:8080/startgame").body("type=X").asString();
+    Unirest.get("http://localhost:8080/joingame").asString();
+
+    // Play until the game ends in a draw
+    Unirest.post("http://localhost:8080/move/1").body("x=1&y=1").asString();
+    Unirest.post("http://localhost:8080/move/2").body("x=0&y=0").asString();
+    Unirest.post("http://localhost:8080/move/1").body("x=0&y=1").asString();
+    Unirest.post("http://localhost:8080/move/2").body("x=2&y=1").asString();
+    Unirest.post("http://localhost:8080/move/1").body("x=1&y=0").asString();
+    Unirest.post("http://localhost:8080/move/2").body("x=1&y=2").asString();
+    Unirest.post("http://localhost:8080/move/1").body("x=0&y=2").asString();
+    Unirest.post("http://localhost:8080/move/2").body("x=2&y=0").asString();
+    Unirest.post("http://localhost:8080/move/1").body("x=2&y=2").asString();
+    
+    GameBoard snapshot = null;
+    
+    try {
+      snapshot = PlayGame.database.get();
+    } catch (Exception e) {
+      Assertions.fail("Getting from Database should not fail");
+    }
+    
+    // Crash the game
+    PlayGame.stop();
+    
+    // Reload the game
+    PlayGame.main(new String[0]);
+    
+    // Ensure no data was lost
+    try {
+      GameBoard newSnapshot = PlayGame.database.get();
+      Assertions.assertNotNull(newSnapshot);
+      Assertions.assertEquals(snapshot.getP1().getId(), newSnapshot.getP1().getId());
+      Assertions.assertEquals(snapshot.getP1().getType(), newSnapshot.getP1().getType());
+      Assertions.assertEquals(snapshot.getP2().getId(), newSnapshot.getP2().getId());
+      Assertions.assertEquals(snapshot.getP2().getType(), newSnapshot.getP2().getType());
+      Assertions.assertEquals(snapshot.isGameStarted(), newSnapshot.isGameStarted());
+      Assertions.assertEquals(snapshot.getTurn(), newSnapshot.getTurn());
+      Assertions.assertArrayEquals(snapshot.getBoardState(), newSnapshot.getBoardState());
+      Assertions.assertEquals(snapshot.getWinner(), newSnapshot.getWinner());
+      Assertions.assertEquals(snapshot.isDraw(), newSnapshot.isDraw());
+    } catch (Exception e) {
+      Assertions.fail("Getting from Database should not fail");
+    }
+
+    // Reset settings to allow for retries while the server loads up
+    Unirest.config().reset().automaticRetries(true);
+    
+    // Make a move as player 2 in an already-filled position
+    HttpResponse<String> response = Unirest.post("http://localhost:8080/move/2").body("x=1&y=1").asString();
+    int resStatus = response.getStatus();
+    String resBody = response.getBody();
+
+    // Assert the server responds with 200 OK
+    Assertions.assertEquals(200, resStatus);
+
+    // Parse the response
+    Message message = new Gson().fromJson(resBody, Message.class);
+
+    // Ensure that player 2 cannot make a move since the game ended in a draw
+    Assertions.assertEquals(false, message.isMoveValid());
+    Assertions.assertEquals(101, message.getCode());
+    Assertions.assertEquals("Game already over", message.getMessage());
+    
+    System.out.println("[Order 23] Tested Database (3. Crash Restore: Draw)");
+  }
+  
+  @Test
+  @Order(24)
+  public void testDatabase_4_CrashRestore_P1Wins() {
+    // Clear the database
+    Unirest.get("http://localhost:8080/newgame").asString();
+    
+    // Start the game
+    Unirest.post("http://localhost:8080/startgame").body("type=X").asString();
+    Unirest.get("http://localhost:8080/joingame").asString();
+
+    // Play until player 1 wins
+    Unirest.post("http://localhost:8080/move/1").body("x=1&y=1").asString();
+    Unirest.post("http://localhost:8080/move/2").body("x=0&y=0").asString();
+    Unirest.post("http://localhost:8080/move/1").body("x=0&y=1").asString();
+    Unirest.post("http://localhost:8080/move/2").body("x=1&y=0").asString();
+    Unirest.post("http://localhost:8080/move/1").body("x=2&y=1").asString();
+    
+    GameBoard snapshot = null;
+    
+    try {
+      snapshot = PlayGame.database.get();
+    } catch (Exception e) {
+      Assertions.fail("Getting from Database should not fail");
+    }
+    
+    // Crash the game
+    PlayGame.stop();
+    
+    // Reload the game
+    PlayGame.main(new String[0]);
+    
+    // Ensure no data was lost
+    try {
+      GameBoard newSnapshot = PlayGame.database.get();
+      Assertions.assertNotNull(newSnapshot);
+      Assertions.assertEquals(snapshot.getP1().getId(), newSnapshot.getP1().getId());
+      Assertions.assertEquals(snapshot.getP1().getType(), newSnapshot.getP1().getType());
+      Assertions.assertEquals(snapshot.getP2().getId(), newSnapshot.getP2().getId());
+      Assertions.assertEquals(snapshot.getP2().getType(), newSnapshot.getP2().getType());
+      Assertions.assertEquals(snapshot.isGameStarted(), newSnapshot.isGameStarted());
+      Assertions.assertEquals(snapshot.getTurn(), newSnapshot.getTurn());
+      Assertions.assertArrayEquals(snapshot.getBoardState(), newSnapshot.getBoardState());
+      Assertions.assertEquals(snapshot.getWinner(), newSnapshot.getWinner());
+      Assertions.assertEquals(snapshot.isDraw(), newSnapshot.isDraw());
+    } catch (Exception e) {
+      Assertions.fail("Getting from Database should not fail");
+    }
+
+    // Reset settings to allow for retries while the server loads up
+    Unirest.config().reset().automaticRetries(true);
+    
+    // Make a move as player 2
+    HttpResponse<String> response = Unirest.post("http://localhost:8080/move/2").body("x=1&y=1").asString();
+    int resStatus = response.getStatus();
+    String resBody = response.getBody();
+
+    // Assert the server responds with 200 OK
+    Assertions.assertEquals(200, resStatus);
+
+    // Parse the response
+    Message message = new Gson().fromJson(resBody, Message.class);
+
+    // Ensure that player 2 cannot make a move since the game ended in P1 winning
+    Assertions.assertEquals(false, message.isMoveValid());
+    Assertions.assertEquals(101, message.getCode());
+    Assertions.assertEquals("Game already over", message.getMessage());
+    
+    System.out.println("[Order 24] Tested Database (4. Crash Restore: P1 Wins)");
+  }
+  
+  @Test
+  @Order(25)
+  public void testDatabase_5_CrashRestore_P1Joined() {
+    // Clear the database
+    Unirest.get("http://localhost:8080/newgame").asString();
+    
+    // Start the game
+    Unirest.post("http://localhost:8080/startgame").body("type=X").asString();
+    
+    GameBoard snapshot = null;
+    
+    try {
+      snapshot = PlayGame.database.get();
+    } catch (Exception e) {
+      Assertions.fail("Getting from Database should not fail");
+    }
+    
+    // Crash the game
+    PlayGame.stop();
+    
+    // Reload the game
+    PlayGame.main(new String[0]);
+    
+    // Ensure no data was lost
+    try {
+      GameBoard newSnapshot = PlayGame.database.get();
+      Assertions.assertNotNull(newSnapshot);
+      Assertions.assertEquals(snapshot.getP1().getId(), newSnapshot.getP1().getId());
+      Assertions.assertEquals(snapshot.getP1().getType(), newSnapshot.getP1().getType());
+      Assertions.assertEquals(null, newSnapshot.getP2());
+      Assertions.assertEquals(snapshot.isGameStarted(), newSnapshot.isGameStarted());
+      Assertions.assertEquals(snapshot.getTurn(), newSnapshot.getTurn());
+      Assertions.assertArrayEquals(snapshot.getBoardState(), newSnapshot.getBoardState());
+      Assertions.assertEquals(snapshot.getWinner(), newSnapshot.getWinner());
+      Assertions.assertEquals(snapshot.isDraw(), newSnapshot.isDraw());
+    } catch (Exception e) {
+      Assertions.fail("Getting from Database should not fail");
+    }
+    
+    System.out.println("[Order 25] Tested Database (5. Crash Restore: P1 Joined)");
+  }
+  
+  @Test
+  @Order(26)
+  public void testDatabase_6_CrashRestore_P2Joined() {
+    // Clear the database
+    Unirest.get("http://localhost:8080/newgame").asString();
+    
+    // Start the game
+    Unirest.post("http://localhost:8080/startgame").body("type=X").asString();
+    
+    // Join the game
+    Unirest.get("http://localhost:8080/joingame").asString();
+    
+    GameBoard snapshot = null;
+    
+    try {
+      snapshot = PlayGame.database.get();
+    } catch (Exception e) {
+      Assertions.fail("Getting from Database should not fail");
+    }
+    
+    // Crash the game
+    PlayGame.stop();
+    
+    // Reload the game
+    PlayGame.main(new String[0]);
+    
+    // Ensure no data was lost
+    try {
+      GameBoard newSnapshot = PlayGame.database.get();
+      Assertions.assertNotNull(newSnapshot);
+      Assertions.assertEquals(snapshot.getP1().getId(), newSnapshot.getP1().getId());
+      Assertions.assertEquals(snapshot.getP1().getType(), newSnapshot.getP1().getType());
+      Assertions.assertEquals(snapshot.getP2().getId(), newSnapshot.getP2().getId());
+      Assertions.assertEquals(snapshot.getP2().getType(), newSnapshot.getP2().getType());
+      Assertions.assertEquals(snapshot.isGameStarted(), newSnapshot.isGameStarted());
+      Assertions.assertEquals(snapshot.getTurn(), newSnapshot.getTurn());
+      Assertions.assertArrayEquals(snapshot.getBoardState(), newSnapshot.getBoardState());
+      Assertions.assertEquals(snapshot.getWinner(), newSnapshot.getWinner());
+      Assertions.assertEquals(snapshot.isDraw(), newSnapshot.isDraw());
+    } catch (Exception e) {
+      Assertions.fail("Getting from Database should not fail");
+    }
+    
+    System.out.println("[Order 26] Tested Database (6. Crash Restore: P2 Joined)");
+  }
+  
+  @Test
+  @Order(27)
+  public void testDatabase_7_CrashRestore_NewGame() {
+    // Clear the database
+    Unirest.get("http://localhost:8080/newgame").asString();
+    
+    // Crash the game
+    PlayGame.stop();
+    
+    // Reload the game
+    PlayGame.main(new String[0]);
+    
+    // Ensure no data was lost
+    try {
+      Assertions.assertEquals(null, PlayGame.database.get());
+    } catch (Exception e) {
+      Assertions.fail("Getting from Database should not fail");
+    }
+    
+    System.out.println("[Order 27] Tested Database (7. Crash Restore: New Game)");
+  }
+  
+  @Test
+  @Order(28)
+  public void testDatabase_8_CrashRestore_P2InvalidMove() {
+    // Clear the database
+    Unirest.get("http://localhost:8080/newgame").asString();
+    
+    // Start the game
+    Unirest.post("http://localhost:8080/startgame").body("type=X").asString();
+    Unirest.get("http://localhost:8080/joingame").asString();
+
+    // Make a valid move as player 1
+    Unirest.post("http://localhost:8080/move/1").body("x=1&y=1").asString();
+    
+    // Make an invalid move as player 2
+    Unirest.post("http://localhost:8080/move/2").body("x=3&y=3").asString();
+    
+    GameBoard snapshot = null;
+    
+    try {
+      snapshot = PlayGame.database.get();
+    } catch (Exception e) {
+      Assertions.fail("Getting from Database should not fail");
+    }
+    
+    // Crash the game
+    PlayGame.stop();
+    
+    // Reload the game
+    PlayGame.main(new String[0]);
+    
+    // Ensure no data was lost
+    try {
+      GameBoard newSnapshot = PlayGame.database.get();
+      Assertions.assertNotNull(newSnapshot);
+      Assertions.assertEquals(snapshot.getP1().getId(), newSnapshot.getP1().getId());
+      Assertions.assertEquals(snapshot.getP1().getType(), newSnapshot.getP1().getType());
+      Assertions.assertEquals(snapshot.getP2().getId(), newSnapshot.getP2().getId());
+      Assertions.assertEquals(snapshot.getP2().getType(), newSnapshot.getP2().getType());
+      Assertions.assertEquals(snapshot.isGameStarted(), newSnapshot.isGameStarted());
+      Assertions.assertEquals(snapshot.getTurn(), newSnapshot.getTurn());
+      Assertions.assertArrayEquals(snapshot.getBoardState(), newSnapshot.getBoardState());
+      Assertions.assertEquals(snapshot.getWinner(), newSnapshot.getWinner());
+      Assertions.assertEquals(snapshot.isDraw(), newSnapshot.isDraw());
+    } catch (Exception e) {
+      Assertions.fail("Getting from Database should not fail");
+    }
+
+    // Reset settings to allow for retries while the server loads up
+    Unirest.config().reset().automaticRetries(true);
+    
+    // Make a valid move as player 2
+    HttpResponse<String> response = Unirest.post("http://localhost:8080/move/2").body("x=0&y=0").asString();
+    int resStatus = response.getStatus();
+    String resBody = response.getBody();
+
+    // Assert the server responds with 200 OK
+    Assertions.assertEquals(200, resStatus);
+
+    // Parse the response
+    Message message = new Gson().fromJson(resBody, Message.class);
+
+    // Ensure that player 2 cannot make a move since the game ended in P1 winning
+    Assertions.assertEquals(true, message.isMoveValid());
+    Assertions.assertEquals(100, message.getCode());
+    Assertions.assertEquals("", message.getMessage());
+    
+    System.out.println("[Order 28] Tested Database (8. Crash Restore: P2 Invalid Move)");
+  }
+  
+  @Test
+  @Order(29)
+  public void testDatabase_CrashNoRestore_DatabaseNull() {
+    // Clear the database
+    Unirest.get("http://localhost:8080/newgame").asString();
+    
+    // Set database to null
+    PlayGame.database = null;
+    
+    // Invoke another clear to ensure a database no-op
+    Unirest.get("http://localhost:8080/newgame").asString();
+    
+    // Start the game
+    Unirest.post("http://localhost:8080/startgame").body("type=X").asString();
+    Unirest.get("http://localhost:8080/joingame").asString();
+
+    // Make a valid move as player 1
+    Unirest.post("http://localhost:8080/move/1").body("x=1&y=1").asString();
+    
+    // Crash the game
+    PlayGame.stop();
+    
+    // Reload the game
+    PlayGame.main(new String[0]);
+    
+    // Ensure the board is still null after /newgame
+    try {
+      Assertions.assertEquals(null, PlayGame.database.get());
+    } catch (Exception e) {
+      Assertions.fail("Getting from Database should not fail");
+    }
+    
+    System.out.println("[Order 29] Tested Database (Crash, No Restore: Database Null)");
+  }
+
+  /**
+   * Close the game server when it's done.
+   */
   @AfterAll
   public static void close() {
     // Stop Server
